@@ -8,11 +8,13 @@ import string
 def park_car():
     # acquire the semaphore, -1 to value
     parking_spaces.acquire()
+    global num_cars
     # here the thread is locked to avoid parking the same car twice by another thread
     with parking_lock:
         car_name = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(8))
         parking_lots.append(car_name)
         print(f'Carro {car_name} foi estacionado pela {threading.current_thread().name}')
+        num_cars -= 1
 
 
 def remove_car():
@@ -26,7 +28,9 @@ def remove_car():
 
 
 def parking_entry():
-    while True:
+    global start_time
+    global num_cars
+    while num_cars > 0:
         # global value to name threads.
         global thr
 
@@ -46,14 +50,15 @@ def parking_entry():
             parking_thread.name = f'Cancela-{thr}'
             thr += 1
             parking_thread.start()
-
+    print(f'Finished Parking time elapsed: {time.time() - start_time}')
 
 
 def parking_exit():
     # Random float to simulate parking time
     global thr
+    global num_cars
     park_time = float(random.uniform(1., 5.))
-    while True:
+    while num_cars > 0:
         time.sleep(park_time)
         # initializing the remove car thread
         remove_thread = threading.Thread(target=remove_car)
@@ -63,6 +68,9 @@ def parking_exit():
 
 
 if __name__ == '__main__':
+
+    num_cars = 200
+
     num_semaphore = 5
 
     parking_spaces = threading.Semaphore(num_semaphore)
@@ -80,11 +88,9 @@ if __name__ == '__main__':
     parking_entry_thread = threading.Thread(target=parking_entry)
 
     parking_exit_thread = threading.Thread(target=parking_exit)
-
+    start_time = time.time()
     # start parking cars
     parking_entry_thread.start()
 
     # start removing 'cars' from parking
     parking_exit_thread.start()
-
-
