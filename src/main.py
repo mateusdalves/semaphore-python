@@ -1,104 +1,67 @@
-# An example python program using semaphore provided by the python threading module
-
 import threading
-
 import time
+import random
+import string
 
-num_semaphore = int(input('Digite a quantidade de vagas do estacionamento'))
-
-wait_time = int(input('Digite o tempo, em segundos, que os carros devem ficar estacionados'))
-
-park_requests = 0
-
-remove_requests = 0
-
-parked = 0
-
-removed = 0
-
-parked_lock = threading.Lock()
-
-removed_lock = threading.Lock()
+num_semaphore = 5
 
 available_parkings = threading.Semaphore(num_semaphore)
 
+parking_lots = {}
 
-def park_car():
-    available_parkings.acquire()
-
-    global parked_lock
-
-    parked_lock.acquire()
-
-    global parked
-
-    parked = parked + 1
-
-    parked_lock.release()
-
-    print(f"Total de Carros Estacionados: {parked}")
+parking_lock = threading.Lock()
+remove_lock = threading.Lock()
 
 
-def remove_car():
-    available_parkings.release()
+def park_car(name, parking_time):
+    # acquire lock while using and release it when done, used to avoid parking in the same memory position.
+    with parking_lock:
+        parking_lots[name] = {
+            'name': name,
+            'time': time.time()
+            }
 
-    global removed_lock
-
-    removed_lock.acquire()
-
-    global removed
-
-    removed = removed + 1
-
-    removed_lock.release()
-
-    print(f"Total de carros removidos: {removed}")
+        print(f'Carro {name} foi estacionado pela cancela {threading.current_thread().name}, tempo de espera {parking_time} segundos')
 
 
-# Thread that simulates the entry of cars into the parking lot
+def remove_car(name):
+    with remove_lock:
+        left_time = parking_lots[name]['time']
+        parking_lots.pop(name)
+        print(f'Carro {name} removido do estacionamento pela cancela {threading.current_thread().name}. tempo estacionado: {time.time() - left_time}')
 
-def parking_entry():
-    # Creates multiple threads inside to simulate cars that are parked
 
-    while (True):
+def parking_entry(car_name, park_time):
+
+    while True:
         time.sleep(1)
+        if available_parkings._value < 0:
+            print('Estamos sem vagas no momento, aguardando 1 segundo.')
+            time.sleep(1)
 
-        incoming_car = threading.Thread(target=park_car)
-
-        incoming_car.start()
-
-        global park_requests
-
-        park_requests = park_requests + 1
-
-        print(f"Parking Requests: {park_requests}")
+        elif available_parkings._value >= 0:
+            print('Vaga disponivel, estaremos estacionando')
+            parking_thread = threading.Thread(target=park_car(car_name, park_time))
+            parking_thread.start()
 
 
-# Thread that simulates the exit of cars from the parking lot
-
-def parking_exit():
-    # Creates multiple threads inside to simulate cars taken out from the parking lot
-
-    while( True) :
+def parking_exit(car_name, wait_time):
+    while True:
         time.sleep(wait_time)
 
-        outgoing_car = threading.Thread(target=remove_car)
-
-        outgoing_car.start()
-
-        global remove_requests
-
-        remove_requests = remove_requests + 1
-
-        print(f"Remove Requests: {remove_requests}")
+        remove_thread = threading.Thread(target=remove_car(car_name))
+        remove_thread.start()
 
 
-# Start the parking eco-system
+if __name__ == '__main__':
+    car_name = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(5))
+    park_time = random.uniform(2., 10.)
 
-parking_entry_thread = threading.Thread(target=parking_entry)
+    parking_entry_thread = threading.Thread(target=parking_entry)
 
-parking_exit_thread = threading.Thread(target=parking_exit)
+    parking_exit_thread = threading.Thread(target=parking_exit)
 
-parking_entry_thread.start()
+    parking_entry_thread.start()
 
-parking_exit_thread.start()
+    parking_exit_thread.start()
+
