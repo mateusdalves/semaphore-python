@@ -69,9 +69,9 @@ def parking_exit():
 
 if __name__ == '__main__':
 
-    num_cars = 200
+    num_semaphore = int(input('Digite a quantidade de Vagas do Estacionamento'))
 
-    num_semaphore = 5
+    num_cars = int(input('Digite a quantidade de carros à ser estacionada'))
 
     parking_spaces = threading.Semaphore(num_semaphore)
 

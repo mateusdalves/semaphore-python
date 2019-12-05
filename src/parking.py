@@ -34,11 +34,11 @@ def parking_exit():
 
 if __name__ == '__main__':
 
-    parking_spaces = 5
+    num_cars = int(input('Digite a quantidade de carros à ser estacionada'))
+
+    parking_spaces = int(input('Digite a quantidade de Vagas do Estacionamento'))
 
     parking_lots = []
-
-    num_cars = 200
 
     park_time = float(random.uniform(1., 5.))
 
