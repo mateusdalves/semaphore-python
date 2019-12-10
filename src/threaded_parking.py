@@ -50,7 +50,6 @@ def parking_entry():
             parking_thread.name = f'Cancela-{thr}'
             thr += 1
             parking_thread.start()
-    print(f'Finished Parking time elapsed: {time.time() - start_time}')
 
 
 def parking_exit():
@@ -65,6 +64,8 @@ def parking_exit():
         thr -= 1
         remove_thread.name = f'Cancela-{thr}'
         remove_thread.start()
+    else:
+        print(f'Finished Parking time elapsed: {time.time() - start_time}')
 
 
 if __name__ == '__main__':

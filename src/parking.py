@@ -34,7 +34,7 @@ def parking_exit():
 
 if __name__ == '__main__':
 
-    num_cars = int(input('Digite a quantidade de carros à ser estacionada'))
+    num_cars = int(input('Digite a quantidade de carros a ser estacionada'))
 
     parking_spaces = int(input('Digite a quantidade de Vagas do Estacionamento'))
 
